@@ -125,7 +125,7 @@ NAN_MODULE_INIT(BluetoothHciSocket::Init) {
   Nan::SetPrototypeMethod(tmpl, "stop", Stop);
   Nan::SetPrototypeMethod(tmpl, "write", Write);
 
-  target->Set(Nan::New("BluetoothHciSocket").ToLocalChecked(), tmpl->GetFunction());
+  Nan::Set(target,Nan::New("BluetoothHciSocket").ToLocalChecked(), Nan::GetFunction(tmpl).ToLocalChecked()).ToChecked();
 }
 
 BluetoothHciSocket::BluetoothHciSocket() :
@@ -266,13 +266,13 @@ void BluetoothHciSocket::emitErrnoError() {
   Nan::HandleScope scope;
 
   Local<Object> globalObj = Nan::GetCurrentContext()->Global();
-  Local<Function> errorConstructor = Local<Function>::Cast(globalObj->Get(Nan::New("Error").ToLocalChecked()));
+  Local<Function> errorConstructor = Local<Function>::Cast(Nan::Get(globalObj,Nan::New("Error").ToLocalChecked()).ToLocalChecked());
 
   Local<Value> constructorArgs[1] = {
     Nan::New(strerror(errno)).ToLocalChecked()
   };
 
-  Local<Value> error = errorConstructor->NewInstance(1, constructorArgs);
+  Local<Value> error = Nan::NewInstance(errorConstructor, 1, constructorArgs).ToLocalChecked();
 
   Local<Value> argv[2] = {
     Nan::New("error").ToLocalChecked(),
@@ -385,14 +385,13 @@ NAN_METHOD(BluetoothHciSocket::BindRaw) {
   Nan::HandleScope scope;
 
   BluetoothHciSocket* p = node::ObjectWrap::Unwrap<BluetoothHciSocket>(info.This());
-
   int devId = 0;
   int* pDevId = NULL;
 
   if (info.Length() > 0) {
     Local<Value> arg0 = info[0];
     if (arg0->IsInt32() || arg0->IsUint32()) {
-      devId = arg0->IntegerValue();
+      devId = arg0 -> IntegerValue(Nan::GetCurrentContext()).FromJust();;
 
       pDevId = &devId;
     }
@@ -407,14 +406,14 @@ NAN_METHOD(BluetoothHciSocket::BindUser) {
   Nan::HandleScope scope;
 
   BluetoothHciSocket* p = node::ObjectWrap::Unwrap<BluetoothHciSocket>(info.This());
-
+  
   int devId = 0;
   int* pDevId = NULL;
 
   if (info.Length() > 0) {
     Local<Value> arg0 = info[0];
     if (arg0->IsInt32() || arg0->IsUint32()) {
-      devId = arg0->IntegerValue();
+      devId = arg0 -> IntegerValue(Nan::GetCurrentContext()).FromJust();
 
       pDevId = &devId;
     }
